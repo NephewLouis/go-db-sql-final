@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/stretchr/testify/require"
 )
 
@@ -40,31 +42,20 @@ func TestAddGetDelete(t *testing.T) {
 	parcel := getTestParcel()
 
 	parAdd, err := store.Add(parcel)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	parGet, err := store.Get(parAdd)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
-	if parGet.Number != parcel.Number ||
-		parGet.Client != parcel.Client ||
-		parGet.Status != parcel.Status ||
-		parGet.Address != parcel.Address {
+	if parGet != parcel {
 		t.Errorf("Полученные данные не совпадают")
 	}
 
 	err = store.Delete(parAdd)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	_, err = store.Get(parAdd)
-	if err == nil {
-		t.Fatalf("Посылка %d была удалена", parAdd)
-	}
+	assert.ErrorIs(t, err, sql.ErrNoRows, "Посылка не найдена")
 }
 
 // TestSetAddress проверяет обновление адреса
@@ -79,23 +70,18 @@ func TestSetAddress(t *testing.T) {
 	parcel := getTestParcel()
 
 	parAdd, err := store.Add(parcel)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	newAddress := "new test address"
+
+	err = store.SetAddress(parAdd, newAddress)
+	require.NoError(t, err)
+
 	parcel.Number = parAdd
 	parcel.Address = newAddress
 
-	err = store.SetAddress(parcel.Number, parcel.Address)
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	parCheck, err := store.Get(parAdd)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	if parCheck.Address != parcel.Address {
 		t.Error("Адрес не обновился")
@@ -114,19 +100,13 @@ func TestSetStatus(t *testing.T) {
 	parcel := getTestParcel()
 
 	parAdd, err := store.Add(parcel)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	err = store.SetStatus(parcel.Number, parcel.Status)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	parCheck, err := store.Get(parAdd)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
 	if parCheck.Status != parcel.Status {
 		t.Error("Статус не обновился")
@@ -165,31 +145,10 @@ func TestGetByClient(t *testing.T) {
 	}
 
 	storedParcels, err := store.GetByClient(client)
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, err)
 
-	if len(parcels) != len(storedParcels) {
-		t.Fatal("Количество полученных посылок не совпадает с количеством добавленных")
-	}
+	assert.Len(t, parcelMap, len(storedParcels),
+		"Количество полученных посылок не совпадает с количеством добавленных")
 
-	for _, parcel := range storedParcels {
-		prod, exists := parcelMap[parcel.Client]
-		if !exists {
-			t.Errorf("Неизвестная посылка %d", parcel.Number)
-			continue
-		}
-
-		if prod.Client != parcel.Client {
-			t.Fatal("Найдено несоответствие клиента")
-		}
-
-		if prod.Status != parcel.Status {
-			t.Fatal("Найдено несоответствие статуса")
-		}
-
-		if prod.Address != parcel.Address {
-			t.Fatal("Найдено несоответствие статуса")
-		}
-	}
+	assert.ElementsMatch(t, parcels, storedParcels, "Списки посылок не совпадают")
 }
