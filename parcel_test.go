@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"log"
 	"math/rand"
 	"testing"
 	"time"
@@ -80,11 +79,7 @@ func TestSetAddress(t *testing.T) {
 	parCheck, err := store.Get(parAdd)
 	require.NoError(t, err)
 
-	log.Print(parCheck.Address)
-	log.Print(newAddress)
-	log.Print(parcel.Address)
-
-	assert.NotEqual(t, parCheck.Address, parcel.Address, "Адреса совпадают")
+	assert.NotEqual(t, parCheck.Address, parcel.Address, "Данные не обновлены")
 }
 
 // TestSetStatus проверяет обновление статуса
@@ -105,9 +100,8 @@ func TestSetStatus(t *testing.T) {
 	parCheck, err := store.Get(parAdd)
 	require.NoError(t, err)
 
-	if parCheck.Status != parcel.Status {
-		t.Error("Статус не обновился")
-	}
+	assert.Equal(t, parcel.Status, parCheck.Status, "Статус не обновился")
+
 }
 
 // TestGetByClient проверяет получение посылок по идентификатору клиента
