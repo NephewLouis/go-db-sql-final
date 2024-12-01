@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"log"
 	"math/rand"
 	"testing"
 	"time"
@@ -33,9 +34,7 @@ func getTestParcel() Parcel {
 // TestAddGetDelete проверяет добавление, получение и удаление посылки
 func TestAddGetDelete(t *testing.T) {
 	db, err := sql.Open("sqlite", "tracker.db")
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
 	defer db.Close()
 
 	store := NewParcelStore(db)
@@ -47,23 +46,21 @@ func TestAddGetDelete(t *testing.T) {
 	parGet, err := store.Get(parAdd)
 	require.NoError(t, err)
 
-	if parGet != parcel {
-		t.Errorf("Полученные данные не совпадают")
-	}
+	parcel.Number = parAdd
+	assert.Equal(t, parGet, parcel, "Полученные данные не совпадают")
 
 	err = store.Delete(parAdd)
 	require.NoError(t, err)
 
 	_, err = store.Get(parAdd)
+	require.Error(t, err)
 	assert.ErrorIs(t, err, sql.ErrNoRows, "Посылка не найдена")
 }
 
 // TestSetAddress проверяет обновление адреса
 func TestSetAddress(t *testing.T) {
 	db, err := sql.Open("sqlite", "tracker.db")
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
 	defer db.Close()
 
 	store := NewParcelStore(db)
@@ -83,17 +80,17 @@ func TestSetAddress(t *testing.T) {
 	parCheck, err := store.Get(parAdd)
 	require.NoError(t, err)
 
-	if parCheck.Address != parcel.Address {
-		t.Error("Адрес не обновился")
-	}
+	log.Print(parCheck.Address)
+	log.Print(newAddress)
+	log.Print(parcel.Address)
+
+	assert.NotEqual(t, parCheck.Address, parcel.Address, "Адреса совпадают")
 }
 
 // TestSetStatus проверяет обновление статуса
 func TestSetStatus(t *testing.T) {
 	db, err := sql.Open("sqlite", "tracker.db")
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
 	defer db.Close()
 
 	store := NewParcelStore(db)
@@ -116,9 +113,7 @@ func TestSetStatus(t *testing.T) {
 // TestGetByClient проверяет получение посылок по идентификатору клиента
 func TestGetByClient(t *testing.T) {
 	db, err := sql.Open("sqlite", "tracker.db")
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
 	defer db.Close()
 
 	store := NewParcelStore(db)
