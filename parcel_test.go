@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"log"
 	"math/rand"
 	"testing"
 	"time"
@@ -68,8 +67,6 @@ func TestSetAddress(t *testing.T) {
 	parAdd, err := store.Add(parcel)
 	require.NoError(t, err)
 
-	log.Print(parcel.Address)
-
 	newAddress := "new test address"
 
 	err = store.SetAddress(parAdd, newAddress)
@@ -80,8 +77,6 @@ func TestSetAddress(t *testing.T) {
 
 	parCheck, err := store.Get(parAdd)
 	require.NoError(t, err)
-
-	log.Print(parcel.Address)
 
 	assert.Equal(t, parCheck.Address, parcel.Address, "Данные не обновлены")
 }
