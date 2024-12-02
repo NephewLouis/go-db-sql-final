@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+
 	_ "modernc.org/sqlite"
 )
 
@@ -55,10 +56,6 @@ func (s ParcelStore) GetByClient(client int) ([]Parcel, error) {
 
 	var res []Parcel
 
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-
 	for rows.Next() {
 		p := Parcel{}
 
@@ -68,6 +65,10 @@ func (s ParcelStore) GetByClient(client int) ([]Parcel, error) {
 		}
 
 		res = append(res, p)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return res, nil

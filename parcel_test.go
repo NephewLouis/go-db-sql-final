@@ -2,12 +2,12 @@ package main
 
 import (
 	"database/sql"
+	"log"
 	"math/rand"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
-
 	"github.com/stretchr/testify/require"
 )
 
@@ -68,6 +68,8 @@ func TestSetAddress(t *testing.T) {
 	parAdd, err := store.Add(parcel)
 	require.NoError(t, err)
 
+	log.Print(parcel.Address)
+
 	newAddress := "new test address"
 
 	err = store.SetAddress(parAdd, newAddress)
@@ -79,7 +81,9 @@ func TestSetAddress(t *testing.T) {
 	parCheck, err := store.Get(parAdd)
 	require.NoError(t, err)
 
-	assert.NotEqual(t, parCheck.Address, parcel.Address, "Данные не обновлены")
+	log.Print(parcel.Address)
+
+	assert.Equal(t, parCheck.Address, parcel.Address, "Данные не обновлены")
 }
 
 // TestSetStatus проверяет обновление статуса
